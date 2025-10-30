@@ -1,0 +1,1701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Reviews Analytics Platform - Dynamic Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        /* Tab Navigation */
+        .tab-navigation {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 2px solid #667eea;
+            overflow-x: auto;
+        }
+
+        .tab-button {
+            padding: 15px 30px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            color: #667eea;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .tab-button:hover {
+            background: #e9ecef;
+        }
+
+        .tab-button.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Dashboard Styles */
+        .region-section {
+            margin: 30px 40px;
+            background: white;
+            border-radius: 12px;
+            overflow: visible;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .region-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .region-header:hover {
+            background: linear-gradient(135deg, #7688f0 0%, #8657b0 100%);
+            transform: scale(1.01);
+        }
+
+        .region-header h2 {
+            font-size: 1.8em;
+            font-weight: 600;
+        }
+
+        .hint {
+            text-align: center;
+            background: #e3f2fd;
+            padding: 12px;
+            margin: 20px 30px;
+            border-radius: 5px;
+            color: #1976d2;
+            font-weight: 500;
+        }
+
+        .table-wrapper {
+            display: flex;
+            border: 1px solid #ddd;
+            margin: 0 30px 30px 30px;
+        }
+
+        .fixed-left, .fixed-right {
+            flex-shrink: 0;
+            background: white;
+            overflow: visible;
+        }
+
+        .fixed-left {
+            border-right: 2px solid #667eea;
+            box-shadow: 2px 0 4px rgba(0,0,0,0.1);
+        }
+
+        .fixed-left th:nth-child(1), .fixed-left td:nth-child(1) {
+            min-width: 180px;
+            max-width: 250px;
+        }
+
+        .fixed-left th:nth-child(2), .fixed-left td:nth-child(2) {
+            min-width: 120px;
+            max-width: 180px;
+        }
+
+        .fixed-left th:nth-child(3), .fixed-left td:nth-child(3) {
+            min-width: 50px;
+            width: 50px;
+        }
+
+        .fixed-left th:nth-child(4), .fixed-left td:nth-child(4) {
+            min-width: 60px;
+            width: 70px;
+        }
+
+        .fixed-right {
+            border-left: 2px solid #667eea;
+            box-shadow: -2px 0 4px rgba(0,0,0,0.1);
+        }
+
+        .fixed-right th, .fixed-right td {
+            min-width: 80px;
+            width: 90px;
+        }
+
+        .scrollable-middle {
+            flex: 1;
+            overflow-x: auto;
+            overflow-y: visible;
+        }
+
+        .scrollable-middle::-webkit-scrollbar {
+            height: 14px;
+        }
+
+        .scrollable-middle::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 7px;
+        }
+
+        .scrollable-middle::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        table {
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .scrollable-middle table {
+            width: max-content;
+        }
+
+        th {
+            background: #f8f9fa;
+            padding: 12px 8px;
+            border-bottom: 2px solid #667eea;
+            color: #667eea;
+            font-weight: 600;
+            white-space: nowrap;
+            text-align: center;
+        }
+
+        td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #e9ecef;
+            white-space: nowrap;
+        }
+
+        .fixed-left td, .fixed-right td {
+            text-align: center;
+        }
+
+        tr:hover td {
+            background: #f8f9fa;
+        }
+
+        .rating {
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .rating-excellent {
+            color: #28a745;
+            background: #d4edda;
+            padding: 4px 6px;
+            border-radius: 4px;
+        }
+
+        .rating-good {
+            color: #5a6268;
+            background: #e2e3e5;
+            padding: 4px 6px;
+            border-radius: 4px;
+        }
+
+        .rating-fair {
+            color: #856404;
+            background: #fff3cd;
+            padding: 4px 6px;
+            border-radius: 4px;
+        }
+
+        .rating-poor {
+            color: #721c24;
+            background: #f8d7da;
+            padding: 4px 6px;
+            border-radius: 4px;
+        }
+
+        .average-row td {
+            background: #fff3cd !important;
+            font-weight: 700;
+            border-top: 2px solid #667eea;
+        }
+
+        .legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-right: 15px;
+        }
+
+        .legend-color {
+            width: 25px;
+            height: 18px;
+            border-radius: 4px;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .footer {
+            background: #f8f9fa;
+            padding: 30px;
+            text-align: center;
+            color: #666;
+            border-top: 1px solid #ddd;
+        }
+
+        /* Graph Styles */
+        .graph-controls {
+            padding: 30px 40px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .graph-controls h3 {
+            margin-bottom: 15px;
+            color: #667eea;
+            font-size: 1.1em;
+        }
+
+        .location-checkboxes {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 12px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .checkbox-item:hover {
+            background: #f0f0f0;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .checkbox-item label {
+            cursor: pointer;
+            font-size: 0.9em;
+            flex: 1;
+        }
+
+        .color-indicator {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 2px solid #ddd;
+        }
+
+        .button-group {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .chart-container {
+            padding: 40px;
+            position: relative;
+            height: 600px;
+        }
+
+        .rankings-section {
+            padding: 40px;
+            background: #f8f9fa;
+            border-top: 2px solid #e9ecef;
+        }
+
+        .rankings-section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .date-range-selector {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .date-input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .date-input-group label {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .date-input-group select {
+            padding: 8px 12px;
+            border: 2px solid #667eea;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+        }
+
+        .rankings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+        }
+
+        .ranking-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .ranking-card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .ranking-list {
+            list-style: none;
+        }
+
+        .ranking-list li {
+            padding: 10px;
+            margin-bottom: 8px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .ranking-list li .rank {
+            font-weight: 700;
+            color: #667eea;
+            margin-right: 10px;
+            min-width: 25px;
+        }
+
+        .ranking-list li .location-name {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        .ranking-list li .rating-value {
+            font-weight: 700;
+            padding: 4px 8px;
+            border-radius: 4px;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .rating-value.excellent {
+            background: #d4edda;
+            color: #28a745;
+        }
+
+        .rating-value.good {
+            background: #e2e3e5;
+            color: #5a6268;
+        }
+
+        .rating-value.fair {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .rating-value.poor {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .rating-value.positive {
+            background: #d1e7dd;
+            color: #0f5132;
+        }
+
+        .rating-value.negative {
+            background: #f8d7da;
+            color: #842029;
+        }
+
+        .rating-value.change {
+            background: #cfe2ff;
+            color: #084298;
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .spinner {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #667eea;
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: white;
+            font-size: 1.5em;
+            margin-top: 20px;
+            font-weight: 600;
+        }
+
+        /* Stats Section Styles */
+        .stats-section {
+            padding: 30px 40px;
+            background: #f8f9fa;
+            margin: 20px 40px;
+            border-radius: 10px;
+        }
+
+        .stats-section h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 0 20px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .stat-card h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .stat-card .stat-value {
+            font-size: 2em;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .stat-card .stat-label {
+            margin-top: 5px;
+            color: #666;
+            font-size: 0.85em;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Spinner -->
+    <div id="loading-spinner" class="loading-spinner">
+        <div class="spinner"></div>
+        <div class="loading-text" id="loading-text">Loading Google Reviews Data from Yext API...</div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>Google Reviews Analytics Platform</h1>
+            <p style="font-size: 0.9em; margin-bottom: 5px; opacity: 0.85;">Created by Moiz Uddin</p>
+            <p>Store Performance Analytics • <span id="date-range">Loading...</span></p>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="tab-navigation" id="tab-navigation">
+            <button class="tab-button active" onclick="switchTab('dashboard')">Home</button>
+            <button class="tab-button" onclick="switchTab('companywide')">Companywide</button>
+        </div>
+
+        <!-- Dashboard Tab -->
+        <div id="dashboard-tab" class="tab-content active">
+            <div id="regions-container"></div>
+
+            <div class="footer">
+                <p><strong>Dashboard Auto-Generated:</strong> <span id="current-date"></span></p>
+                <p>Data fetched in real-time from Yext API • Automatically refreshes at the beginning of each month</p>
+            </div>
+        </div>
+
+        <!-- Companywide Tab -->
+        <div id="companywide-tab" class="tab-content">
+            <div class="region-section" style="margin: 30px 40px;">
+                <div class="region-header">
+                    <h2>Companywide Google Reviews</h2>
+                    <span class="region-manager">
+                        <span class="legend-item"><span class="legend-color rating-excellent"></span>Excellent (4.0+)</span>
+                        <span class="legend-item"><span class="legend-color rating-good"></span>Good (3.0-3.9)</span>
+                        <span class="legend-item"><span class="legend-color rating-fair"></span>Fair (2.5-2.9)</span>
+                        <span class="legend-item"><span class="legend-color rating-poor"></span>Poor (&lt; 2.5)</span>
+                    </span>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="companywideChart"></canvas>
+                </div>
+
+                <div class="stats-section">
+                    <h3>Key Statistics</h3>
+                    <div class="stats-grid" id="companywideStats">
+                        <!-- Stats will be populated dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Store Rankings Section -->
+            <div class="rankings-section">
+                <h2>Store & Region Rankings</h2>
+                <div class="date-range-selector">
+                    <div class="date-input-group">
+                        <label>Start Month:</label>
+                        <select id="companywide-startMonth" onchange="updateCompanywideRankings()"></select>
+                        <select id="companywide-startYear" onchange="updateCompanywideRankings()"></select>
+                    </div>
+                    <div class="date-input-group">
+                        <label>End Month:</label>
+                        <select id="companywide-endMonth" onchange="updateCompanywideRankings()"></select>
+                        <select id="companywide-endYear" onchange="updateCompanywideRankings()"></select>
+                    </div>
+                </div>
+
+                <h3 style="margin-top: 40px; margin-bottom: 20px; color: #667eea; font-size: 1.5em;">Store Rankings</h3>
+                <div class="rankings-grid">
+                    <div class="ranking-card">
+                        <h3>Best 5 Stores</h3>
+                        <ul class="ranking-list" id="companywide-best5-stores"></ul>
+                    </div>
+                    <div class="ranking-card">
+                        <h3>Worst 5 Stores</h3>
+                        <ul class="ranking-list" id="companywide-worst5-stores"></ul>
+                    </div>
+                    <div class="ranking-card">
+                        <h3>Most Improved Stores</h3>
+                        <ul class="ranking-list" id="companywide-improved-stores"></ul>
+                    </div>
+                    <div class="ranking-card">
+                        <h3>Most Declined Stores</h3>
+                        <ul class="ranking-list" id="companywide-declined-stores"></ul>
+                    </div>
+                </div>
+
+                <h3 style="margin-top: 40px; margin-bottom: 20px; color: #667eea; font-size: 1.5em;">Region Rankings</h3>
+                <div class="rankings-grid">
+                    <div class="ranking-card">
+                        <h3>Best Regions</h3>
+                        <ul class="ranking-list" id="companywide-best-regions"></ul>
+                    </div>
+                    <div class="ranking-card">
+                        <h3>Worst Regions</h3>
+                        <ul class="ranking-list" id="companywide-worst-regions"></ul>
+                    </div>
+                    <div class="ranking-card">
+                        <h3>Most Improved Regions</h3>
+                        <ul class="ranking-list" id="companywide-improved-regions"></ul>
+                    </div>
+                    <div class="ranking-card">
+                        <h3>Most Declined Regions</h3>
+                        <ul class="ranking-list" id="companywide-declined-regions"></ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer">
+                <p><strong>Data Range:</strong> October 2024 - Present</p>
+                <p>Companywide average calculated from all active locations</p>
+            </div>
+        </div>
+
+        <!-- Graph Tabs (dynamically created) -->
+    </div>
+
+    <script src="dynamic.js"></script>
+    <script>
+        // Store all fetched data to avoid re-fetching
+        const regionalGraphData = {};
+
+        // Switch between tabs
+        function switchTab(tabName) {
+            console.log('switchTab called with:', tabName);
+
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Deactivate all buttons
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Determine the tab ID (convert spaces to hyphens for IDs)
+            let tabId;
+            if (tabName === 'dashboard') {
+                tabId = 'dashboard';
+            } else if (tabName === 'companywide') {
+                tabId = 'companywide';
+            } else {
+                tabId = tabName.replace(/\s+/g, '-').replace(/\//g, '-');
+            }
+
+            // Show selected tab
+            const selectedTab = document.getElementById(`${tabId}-tab`);
+            if (selectedTab) {
+                selectedTab.classList.add('active');
+                console.log('Activated tab:', `${tabId}-tab`);
+            } else {
+                console.error('Tab not found:', `${tabId}-tab`);
+            }
+
+            // Activate selected button
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(btn => {
+                if (btn.textContent === tabName ||
+                    (tabName === 'dashboard' && btn.textContent === 'Home') ||
+                    (tabName === 'companywide' && btn.textContent === 'Companywide')) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
+        // Fetch graph data for a region
+        async function fetchRegionGraphData(regionName, locations) {
+            console.log(`Fetching graph data for ${regionName}...`);
+            const monthLabels = generateMonthLabels();
+            const locationsData = [];
+
+            const colors = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c',
+                          '#34495e', '#e67e22', '#95a5a6', '#16a085', '#c0392b', '#27ae60',
+                          '#d35400', '#8e44ad', '#2980b9', '#c0392b', '#16a085', '#f1c40f',
+                          '#e74c3c', '#3498db', '#2ecc71'];
+
+            for (let i = 0; i < locations.length; i++) {
+                const location = locations[i];
+                const loadingMsg = `Loading ${regionName}: ${location.city} (${i + 1}/${locations.length})...`;
+                document.getElementById('loading-text').textContent = loadingMsg;
+                console.log(loadingMsg);
+
+                const ratings = [];
+                for (const month of monthLabels) {
+                    const rating = await fetchRating(location.entityId, month.apiDate);
+                    ratings.push(rating);
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+
+                locationsData.push({
+                    name: location.address.includes('Serviceable Area') ? 'Serviceable Area' : location.address,
+                    city: location.city,
+                    data: ratings,
+                    color: colors[i % colors.length]
+                });
+            }
+
+            // Calculate average
+            const averageData = [];
+            for (let i = 0; i < monthLabels.length; i++) {
+                const validRatings = locationsData.map(loc => loc.data[i]).filter(r => r !== null);
+                if (validRatings.length > 0) {
+                    const avg = validRatings.reduce((sum, r) => sum + parseFloat(r), 0) / validRatings.length;
+                    averageData.push(parseFloat(avg.toFixed(1)));
+                } else {
+                    averageData.push(null);
+                }
+            }
+
+            return {
+                months: monthLabels.map(m => m.label),
+                locations: locationsData,
+                average: {
+                    name: `${regionName.toUpperCase()} AVERAGE`,
+                    data: averageData,
+                    color: '#000000'
+                }
+            };
+        }
+
+        // Render region graph tab
+        function renderRegionGraph(regionName, data) {
+            const tabId = regionName.replace(/\s+/g, '-').replace(/\//g, '-');
+            let tab = document.getElementById(`${tabId}-tab`);
+
+            if (!tab) {
+                tab = document.createElement('div');
+                tab.id = `${tabId}-tab`;
+                tab.className = 'tab-content';
+                document.querySelector('.container').appendChild(tab);
+            }
+
+            tab.innerHTML = `
+                <div class="graph-controls">
+                    <h3>Select Locations to Display:</h3>
+                    <div class="location-checkboxes" id="${tabId}-checkboxes"></div>
+                    <div class="button-group">
+                        <button class="btn btn-primary" onclick="selectAllLocations(\`${regionName}\`)">Select All</button>
+                        <button class="btn btn-secondary" onclick="deselectAllLocations(\`${regionName}\`)">Deselect All</button>
+                        <button class="btn btn-primary" onclick="toggleRegionAverage(\`${regionName}\`)">Toggle Average</button>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="${tabId}-chart"></canvas>
+                </div>
+
+                <div class="rankings-section">
+                    <h2>Store Rankings</h2>
+                    <div class="date-range-selector">
+                        <div class="date-input-group">
+                            <label>Start Month:</label>
+                            <select id="${tabId}-startMonth" onchange="updateRegionRankings(\`${regionName}\`)"></select>
+                            <select id="${tabId}-startYear" onchange="updateRegionRankings(\`${regionName}\`)"></select>
+                        </div>
+                        <div class="date-input-group">
+                            <label>End Month:</label>
+                            <select id="${tabId}-endMonth" onchange="updateRegionRankings(\`${regionName}\`)"></select>
+                            <select id="${tabId}-endYear" onchange="updateRegionRankings(\`${regionName}\`)"></select>
+                        </div>
+                    </div>
+
+                    <div class="rankings-grid">
+                        <div class="ranking-card">
+                            <h3>Best 5 Stores</h3>
+                            <ul class="ranking-list" id="${tabId}-best5"></ul>
+                        </div>
+                        <div class="ranking-card">
+                            <h3>Worst 5 Stores</h3>
+                            <ul class="ranking-list" id="${tabId}-worst5"></ul>
+                        </div>
+                        <div class="ranking-card">
+                            <h3>Most Improved</h3>
+                            <ul class="ranking-list" id="${tabId}-improved"></ul>
+                        </div>
+                        <div class="ranking-card">
+                            <h3>Most Declined</h3>
+                            <ul class="ranking-list" id="${tabId}-declined"></ul>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Initialize checkboxes
+            const checkboxContainer = document.getElementById(`${tabId}-checkboxes`);
+            data.locations.forEach((loc, i) => {
+                const div = document.createElement('div');
+                div.className = 'checkbox-item';
+                div.innerHTML = `
+                    <input type="checkbox" id="${tabId}-loc${i}" checked onchange="updateRegionChart(\`${regionName}\`)">
+                    <div class="color-indicator" style="background-color: ${loc.color}"></div>
+                    <label for="${tabId}-loc${i}">${loc.city}</label>
+                `;
+                checkboxContainer.appendChild(div);
+            });
+
+            // Initialize chart
+            initializeRegionChart(regionName, data);
+
+            // Initialize date selectors
+            initializeRegionDateSelectors(regionName);
+
+            // Update rankings
+            updateRegionRankings(regionName);
+        }
+
+        // Initialize region chart
+        function initializeRegionChart(regionName, data) {
+            const tabId = regionName.replace(/\s+/g, '-').replace(/\//g, '-');
+            const ctx = document.getElementById(`${tabId}-chart`).getContext('2d');
+
+            const datasets = data.locations.map((loc) => ({
+                label: loc.city,
+                data: loc.data,
+                borderColor: loc.color,
+                backgroundColor: loc.color + '20',
+                borderWidth: 2,
+                tension: 0.4,
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }));
+
+            datasets.push({
+                label: data.average.name,
+                data: data.average.data,
+                borderColor: data.average.color,
+                backgroundColor: data.average.color + '20',
+                borderWidth: 4,
+                tension: 0.4,
+                pointRadius: 5,
+                pointHoverRadius: 7
+            });
+
+            regionalGraphData[regionName].chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.months,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            onClick: null,
+                            display: true,
+                            position: 'top',
+                            labels: { usePointStyle: true, padding: 15 }
+                        },
+                        title: {
+                            display: true,
+                            text: `Google Reviews Rating Trends - ${regionName}`,
+                            font: { size: 18, weight: 'bold' },
+                            padding: 20
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            min: 0.0,
+                            max: 5.0,
+                            ticks: { stepSize: 0.5 },
+                            title: { display: true, text: 'Rating' }
+                        },
+                        x: {
+                            title: { display: true, text: 'Month' }
+                        }
+                    }
+                }
+            });
+
+            regionalGraphData[regionName].showAverage = true;
+        }
+
+        // Update region chart
+        function updateRegionChart(regionName) {
+            const data = regionalGraphData[regionName];
+            if (!data || !data.chart) return;
+
+            const tabId = regionName.replace(/\s+/g, '-').replace(/\//g, '-');
+            const datasets = [];
+
+            data.locations.forEach((loc, i) => {
+                const checkbox = document.getElementById(`${tabId}-loc${i}`);
+                if (checkbox && checkbox.checked) {
+                    datasets.push({
+                        label: loc.city,
+                        data: loc.data,
+                        borderColor: loc.color,
+                        backgroundColor: loc.color + '20',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    });
+                }
+            });
+
+            if (data.showAverage) {
+                datasets.push({
+                    label: data.average.name,
+                    data: data.average.data,
+                    borderColor: data.average.color,
+                    backgroundColor: data.average.color + '20',
+                    borderWidth: 4,
+                    tension: 0.4,
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                });
+            }
+
+            data.chart.data.datasets = datasets;
+            data.chart.update();
+        }
+
+        // Select/deselect all locations
+        function selectAllLocations(regionName) {
+            const tabId = regionName.replace(/\s+/g, '-').replace(/\//g, '-');
+            const data = regionalGraphData[regionName];
+            data.locations.forEach((loc, i) => {
+                const checkbox = document.getElementById(`${tabId}-loc${i}`);
+                if (checkbox) checkbox.checked = true;
+            });
+            updateRegionChart(regionName);
+        }
+
+        function deselectAllLocations(regionName) {
+            const tabId = regionName.replace(/\s+/g, '-').replace(/\//g, '-');
+            const data = regionalGraphData[regionName];
+            data.locations.forEach((loc, i) => {
+                const checkbox = document.getElementById(`${tabId}-loc${i}`);
+                if (checkbox) checkbox.checked = false;
+            });
+            updateRegionChart(regionName);
+        }
+
+        function toggleRegionAverage(regionName) {
+            const data = regionalGraphData[regionName];
+            data.showAverage = !data.showAverage;
+            updateRegionChart(regionName);
+        }
+
+        // Initialize date selectors
+        function initializeRegionDateSelectors(regionName) {
+            const tabId = regionName.replace(/\s+/g, '-').replace(/\//g, '-');
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                              'July', 'August', 'September', 'October', 'November', 'December'];
+
+            const startMonth = document.getElementById(`${tabId}-startMonth`);
+            const endMonth = document.getElementById(`${tabId}-endMonth`);
+            const startYear = document.getElementById(`${tabId}-startYear`);
+            const endYear = document.getElementById(`${tabId}-endYear`);
+
+            monthNames.forEach((month, i) => {
+                startMonth.add(new Option(month, i));
+                endMonth.add(new Option(month, i));
+            });
+
+            [2024, 2025].forEach(year => {
+                startYear.add(new Option(year, year));
+                endYear.add(new Option(year, year));
+            });
+
+            const now = new Date();
+            startMonth.value = 9; // October
+            startYear.value = 2024;
+            endMonth.value = now.getMonth();
+            endYear.value = now.getFullYear();
+        }
+
+        // Update region rankings
+        function updateRegionRankings(regionName) {
+            const data = regionalGraphData[regionName];
+            if (!data) return;
+
+            const tabId = regionName.replace(/\s+/g, '-').replace(/\//g, '-');
+            const startMonth = parseInt(document.getElementById(`${tabId}-startMonth`).value);
+            const startYear = parseInt(document.getElementById(`${tabId}-startYear`).value);
+            const endMonth = parseInt(document.getElementById(`${tabId}-endMonth`).value);
+            const endYear = parseInt(document.getElementById(`${tabId}-endYear`).value);
+
+            const startIdx = (startYear - 2024) * 12 + startMonth - 9;
+            const endIdx = (endYear - 2024) * 12 + endMonth - 9;
+
+            if (startIdx < 0 || endIdx < 0 || startIdx > endIdx) return;
+
+            const rankings = data.locations.map(loc => {
+                const avgRating = calculateAverageRating(loc.data, startIdx, endIdx);
+                const startRating = parseFloat(loc.data[startIdx]) || null;
+                const endRating = parseFloat(loc.data[endIdx]) || null;
+
+                // Only calculate change if both start and end ratings exist
+                let change = 0;
+                if (startRating !== null && endRating !== null) {
+                    change = endRating - startRating;
+                }
+
+                return {
+                    name: loc.city,
+                    avgRating,
+                    change,
+                    startRating,
+                    endRating,
+                    hasValidData: avgRating > 0
+                };
+            });
+
+            // Filter out locations with no valid data
+            const validRankings = rankings.filter(r => r.hasValidData);
+
+            const best5 = [...validRankings].sort((a, b) => b.avgRating - a.avgRating).slice(0, 5);
+            const worst5 = [...validRankings].sort((a, b) => a.avgRating - b.avgRating).slice(0, 5);
+            const improved = [...validRankings].filter(r => r.change > 0).sort((a, b) => b.change - a.change).slice(0, 5);
+            const declined = [...validRankings].filter(r => r.change < 0).sort((a, b) => a.change - b.change).slice(0, 5);
+
+            renderRankingList(`${tabId}-best5`, best5, 'avgRating');
+            renderRankingList(`${tabId}-worst5`, worst5, 'avgRating');
+            renderRankingList(`${tabId}-improved`, improved, 'change');
+            renderRankingList(`${tabId}-declined`, declined, 'change');
+        }
+
+        function calculateAverageRating(data, startIdx, endIdx) {
+            let sum = 0, count = 0;
+            for (let i = startIdx; i <= endIdx && i < data.length; i++) {
+                if (data[i] !== null && data[i] !== undefined) {
+                    sum += parseFloat(data[i]);
+                    count++;
+                }
+            }
+            return count > 0 ? sum / count : 0;
+        }
+
+        function getRatingClass(rating) {
+            if (rating >= 4.0) return 'excellent';
+            if (rating >= 3.0) return 'good';
+            if (rating >= 2.5) return 'fair';
+            return 'poor';
+        }
+
+        function renderRankingList(elementId, data, metric) {
+            const list = document.getElementById(elementId);
+            if (!list) return;
+
+            list.innerHTML = '';
+
+            if (data.length === 0) {
+                list.innerHTML = '<li style="justify-content: center; font-style: italic; color: #666;">No data</li>';
+                return;
+            }
+
+            data.forEach((item, i) => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span class="rank">#${i + 1}</span>
+                    <span class="location-name">${item.name}</span>
+                    <span class="rating-value ${metric === 'avgRating' ? getRatingClass(item.avgRating) : (item.change > 0 ? 'positive' : 'negative')}">
+                        ${metric === 'avgRating' ? item.avgRating.toFixed(2) : (item.change >= 0 ? '+' : '') + item.change.toFixed(2)}
+                    </span>
+                `;
+                list.appendChild(li);
+            });
+        }
+
+        // Override populateDashboard to prevent it from running (we handle it ourselves)
+        window.populateDashboard = function() {
+            console.log('populateDashboard called but overridden - using loadAllRegionsAndGraphs instead');
+        };
+
+        // Create our own region section function
+        function createRegionSectionCustom(regionName, regionData, monthLabels) {
+            // Create tab button
+            const tabNav = document.getElementById('tab-navigation');
+            const existingBtn = Array.from(document.querySelectorAll('.tab-button')).find(btn => btn.textContent === regionName);
+
+            if (!existingBtn) {
+                const btn = document.createElement('button');
+                btn.className = 'tab-button';
+                btn.textContent = regionName;
+                btn.onclick = () => switchTab(regionName);
+                tabNav.appendChild(btn);
+            }
+
+            // Create section
+            const section = document.createElement('div');
+            section.className = 'region-section';
+            section.id = `region-${regionName.replace(/\s+/g, '-').replace(/\//g, '-')}`;
+
+            // Store region name as data attribute to avoid issues with special characters
+            section.dataset.regionName = regionName;
+
+            section.innerHTML = `
+                <div class="region-header" style="cursor: pointer;">
+                    <h2>${regionName} <span style="font-size: 0.5em; font-weight: 400; opacity: 0.85; font-style: italic;">(click to see graph)</span></h2>
+                    <span class="region-manager">
+                        <span class="legend-item"><span class="legend-color rating-excellent"></span>Excellent (4.0+)</span>
+                        <span class="legend-item"><span class="legend-color rating-good"></span>Good (3.0-3.9)</span>
+                        <span class="legend-item"><span class="legend-color rating-fair"></span>Fair (2.5-2.9)</span>
+                        <span class="legend-item"><span class="legend-color rating-poor"></span>Poor (&lt; 2.5)</span>
+                    </span>
+                </div>
+                <div class="hint">← Scroll the middle section to view all months (October 2024 - Present) →</div>
+                <div class="table-wrapper">
+                    <div class="fixed-left">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Address</th>
+                                    <th>City</th>
+                                    <th>State</th>
+                                    <th>Zip</th>
+                                </tr>
+                            </thead>
+                            <tbody id="${regionName}-left-tbody">
+                                ${regionData.locations.map(loc => `
+                                    <tr>
+                                        <td>${loc.address.includes('Serviceable Area') ? 'Serviceable Area' : loc.address}</td>
+                                        <td>${loc.city}</td>
+                                        <td>${loc.state}</td>
+                                        <td>${loc.zip}</td>
+                                    </tr>
+                                `).join('')}
+                                <tr class="average-row">
+                                    <td colspan="4"><strong>${regionName.toUpperCase()} AVERAGE</strong></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="scrollable-middle">
+                        <table>
+                            <thead>
+                                <tr>
+                                    ${monthLabels.map(m => `<th>${m.label}</th>`).join('')}
+                                </tr>
+                            </thead>
+                            <tbody id="${regionName}-middle-tbody">
+                                ${regionData.locations.map(() => `
+                                    <tr>
+                                        ${monthLabels.map(() => `<td class="rating">-</td>`).join('')}
+                                    </tr>
+                                `).join('')}
+                                <tr class="average-row">
+                                    ${monthLabels.map(() => `<td class="rating">-</td>`).join('')}
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="fixed-right">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>XFINITY</th>
+                                    <th>Spectrum</th>
+                                    <th>Verizon</th>
+                                    <th>AT&T</th>
+                                </tr>
+                            </thead>
+                            <tbody id="${regionName}-right-tbody">
+                                ${regionData.locations.map(() => `
+                                    <tr>
+                                        <td class="rating ${getRatingClassLocal(regionData.competitors.xfinity)}">${formatRating(regionData.competitors.xfinity)}</td>
+                                        <td class="rating ${getRatingClassLocal(regionData.competitors.spectrum)}">${formatRating(regionData.competitors.spectrum)}</td>
+                                        <td class="rating ${getRatingClassLocal(regionData.competitors.verizon)}">${formatRating(regionData.competitors.verizon)}</td>
+                                        <td class="rating ${getRatingClassLocal(regionData.competitors.att)}">${formatRating(regionData.competitors.att)}</td>
+                                    </tr>
+                                `).join('')}
+                                <tr class="average-row">
+                                    <td class="rating">${formatRating(regionData.competitors.xfinity)}</td>
+                                    <td class="rating">${formatRating(regionData.competitors.spectrum)}</td>
+                                    <td class="rating">${formatRating(regionData.competitors.verizon)}</td>
+                                    <td class="rating">${formatRating(regionData.competitors.att)}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+
+            // Add click handler to region header
+            const regionHeader = section.querySelector('.region-header');
+            regionHeader.addEventListener('click', () => switchTab(regionName));
+
+            return section;
+        }
+
+        // Local helper for rating class (to avoid conflicts)
+        function getRatingClassLocal(rating) {
+            if (!rating || rating === '-') return '';
+            const val = parseFloat(rating);
+            if (val >= 4.0) return 'rating-excellent';
+            if (val >= 3.0) return 'rating-good';
+            if (val >= 2.5) return 'rating-fair';
+            return 'rating-poor';
+        }
+
+        // Load all regions at once
+        async function loadAllRegionsAndGraphs() {
+            showLoading();
+            document.getElementById('loading-text').textContent = 'Loading Dashboard and Graphs... This will take 3-5 minutes...';
+
+            const monthLabels = generateMonthLabels();
+            const container = document.getElementById('regions-container');
+
+            // Update header with date range
+            const dateRange = document.getElementById('date-range');
+            if (dateRange) {
+                dateRange.textContent = `October 2024 - ${new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`;
+            }
+
+            try {
+                for (const [regionName, regionData] of Object.entries(REGIONS)) {
+                    console.log(`\n=== Processing region: ${regionName} ===`);
+
+                    // Create region section in dashboard using our custom function
+                    const regionSection = createRegionSectionCustom(regionName, regionData, monthLabels);
+                    container.appendChild(regionSection);
+
+                    // Fetch dashboard data for each location
+                    for (let locIndex = 0; locIndex < regionData.locations.length; locIndex++) {
+                        const location = regionData.locations[locIndex];
+                        document.getElementById('loading-text').textContent =
+                            `Loading Dashboard: ${regionName} - ${location.city} (${locIndex + 1}/${regionData.locations.length})...`;
+
+                        const ratings = [];
+                        for (const month of monthLabels) {
+                            const rating = await fetchRating(location.entityId, month.apiDate);
+                            ratings.push(rating);
+                            await new Promise(resolve => setTimeout(resolve, 100));
+                        }
+
+                        // Update table row with ratings AND COLOR CODING
+                        const tbody = document.getElementById(`${regionName}-middle-tbody`);
+                        if (tbody) {
+                            const row = tbody.children[locIndex];
+                            if (row) {
+                                ratings.forEach((rating, index) => {
+                                    const cell = row.children[index];
+                                    const formattedRating = formatRating(rating);
+                                    cell.textContent = formattedRating;
+
+                                    // Apply color coding
+                                    cell.className = 'rating';
+                                    if (formattedRating !== '-') {
+                                        const ratingValue = parseFloat(formattedRating);
+                                        if (ratingValue >= 4.0) {
+                                            cell.classList.add('rating-excellent');
+                                        } else if (ratingValue >= 3.0) {
+                                            cell.classList.add('rating-good');
+                                        } else if (ratingValue >= 2.5) {
+                                            cell.classList.add('rating-fair');
+                                        } else {
+                                            cell.classList.add('rating-poor');
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                    }
+
+                    // Calculate and update average row
+                    updateAverageRow(regionName, regionData.locations.length, monthLabels);
+
+                    // Now fetch graph data for this region
+                    document.getElementById('loading-text').textContent = `Loading Graph Data for ${regionName}...`;
+                    const graphData = await fetchRegionGraphData(regionName, regionData.locations);
+                    regionalGraphData[regionName] = graphData;
+
+                    // Render graph tab
+                    renderRegionGraph(regionName, graphData);
+                    console.log(`Completed ${regionName}`);
+                }
+
+                // Sync row heights
+                syncRowHeights();
+
+                // Generate companywide data
+                document.getElementById('loading-text').textContent = 'Generating Companywide Statistics...';
+                await generateCompanywideData();
+
+            } catch (error) {
+                console.error('Error loading data:', error);
+                alert('Error loading data. Please refresh the page.');
+            }
+
+            hideLoading();
+            console.log('=== All data loaded successfully ===');
+        }
+
+        // Generate companywide data from all regions
+        async function generateCompanywideData() {
+            console.log('Generating companywide data...');
+
+            const monthLabels = generateMonthLabels();
+            const companywideAverages = [];
+
+            // Calculate average for each month across all regions
+            for (let monthIndex = 0; monthIndex < monthLabels.length; monthIndex++) {
+                let totalSum = 0;
+                let totalCount = 0;
+
+                // Go through each region
+                for (const [regionName, graphData] of Object.entries(regionalGraphData)) {
+                    // Get all location ratings for this month
+                    if (graphData.locations) {
+                        graphData.locations.forEach(loc => {
+                            const rating = loc.data[monthIndex];
+                            if (rating !== null && rating !== undefined) {
+                                totalSum += parseFloat(rating);
+                                totalCount++;
+                            }
+                        });
+                    }
+                }
+
+                // Calculate average for this month
+                if (totalCount > 0) {
+                    companywideAverages.push(parseFloat((totalSum / totalCount).toFixed(1)));
+                } else {
+                    companywideAverages.push(null);
+                }
+            }
+
+            console.log('Companywide averages:', companywideAverages);
+
+            // Render the chart
+            renderCompanywideChart(monthLabels.map(m => m.label), companywideAverages);
+
+            // Calculate and render statistics
+            renderCompanywideStats(companywideAverages, monthLabels);
+
+            // Initialize date selectors and rankings
+            initializeCompanywideDateSelectors();
+            updateCompanywideRankings();
+        }
+
+        // Render companywide chart
+        function renderCompanywideChart(labels, data) {
+            const ctx = document.getElementById('companywideChart');
+            if (!ctx) {
+                console.error('Companywide chart canvas not found');
+                return;
+            }
+
+            new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Companywide Average Rating',
+                        data: data,
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        pointBackgroundColor: '#667eea',
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        title: {
+                            display: true,
+                            text: 'Companywide Google Reviews - Store Average Ratings',
+                            font: { size: 18, weight: 'bold' },
+                            padding: 20
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            min: 0.0,
+                            max: 5.0,
+                            ticks: { stepSize: 0.5 },
+                            title: { display: true, text: 'Rating' }
+                        },
+                        x: {
+                            title: { display: true, text: 'Month' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Render companywide statistics
+        function renderCompanywideStats(data, monthLabels) {
+            const validRatings = data.filter(r => r !== null);
+            if (validRatings.length === 0) return;
+
+            const currentRating = data[data.length - 1];
+            const startRating = data[0];
+            const improvement = currentRating - startRating;
+            const lowestRating = Math.min(...validRatings);
+            const lowestIndex = data.indexOf(lowestRating);
+
+            // Find year-over-year change (12 months ago, if exists)
+            let yoyChange = 0;
+            if (data.length >= 13) {
+                const currentMonth = data[data.length - 1];
+                const yearAgo = data[data.length - 13];
+                if (currentMonth !== null && yearAgo !== null) {
+                    yoyChange = currentMonth - yearAgo;
+                }
+            }
+
+            const trend = currentRating > startRating ? '↗' : (currentRating < startRating ? '↘' : '→');
+            const trendText = currentRating > startRating ? 'Steady Improvement' : (currentRating < startRating ? 'Declining' : 'Stable');
+
+            const statsContainer = document.getElementById('companywideStats');
+            statsContainer.innerHTML = `
+                <div class="stat-card">
+                    <h4>Current Rating</h4>
+                    <div class="stat-value ${getRatingClassLocal(currentRating)}">${currentRating.toFixed(1)}</div>
+                    <div class="stat-label">${monthLabels[monthLabels.length - 1].label}</div>
+                </div>
+                <div class="stat-card">
+                    <h4>Starting Rating</h4>
+                    <div class="stat-value ${getRatingClassLocal(startRating)}">${startRating.toFixed(1)}</div>
+                    <div class="stat-label">${monthLabels[0].label}</div>
+                </div>
+                <div class="stat-card">
+                    <h4>Total Improvement</h4>
+                    <div class="stat-value rating-excellent">${improvement >= 0 ? '+' : ''}${improvement.toFixed(1)}</div>
+                    <div class="stat-label">Since ${monthLabels[0].label}</div>
+                </div>
+                <div class="stat-card">
+                    <h4>Lowest Point</h4>
+                    <div class="stat-value ${getRatingClassLocal(lowestRating)}">${lowestRating.toFixed(1)}</div>
+                    <div class="stat-label">${monthLabels[lowestIndex].label}</div>
+                </div>
+                <div class="stat-card">
+                    <h4>Month-over-Month</h4>
+                    <div class="stat-value rating-excellent">${yoyChange >= 0 ? '+' : ''}${yoyChange.toFixed(1)}</div>
+                    <div class="stat-label">vs. Previous Period</div>
+                </div>
+                <div class="stat-card">
+                    <h4>Recent Trend</h4>
+                    <div class="stat-value rating-excellent">${trend}</div>
+                    <div class="stat-label">${trendText}</div>
+                </div>
+            `;
+        }
+
+        // Initialize companywide date selectors
+        function initializeCompanywideDateSelectors() {
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                              'July', 'August', 'September', 'October', 'November', 'December'];
+
+            const startMonth = document.getElementById('companywide-startMonth');
+            const endMonth = document.getElementById('companywide-endMonth');
+            const startYear = document.getElementById('companywide-startYear');
+            const endYear = document.getElementById('companywide-endYear');
+
+            if (!startMonth || !endMonth || !startYear || !endYear) {
+                console.error('Date selector elements not found');
+                return;
+            }
+
+            monthNames.forEach((month, i) => {
+                startMonth.add(new Option(month, i));
+                endMonth.add(new Option(month, i));
+            });
+
+            [2024, 2025].forEach(year => {
+                startYear.add(new Option(year, year));
+                endYear.add(new Option(year, year));
+            });
+
+            const now = new Date();
+            startMonth.value = 9; // October
+            startYear.value = 2024;
+            endMonth.value = now.getMonth();
+            endYear.value = now.getFullYear();
+        }
+
+        // Update companywide rankings
+        function updateCompanywideRankings() {
+            console.log('Updating companywide rankings...');
+
+            const startMonth = parseInt(document.getElementById('companywide-startMonth').value);
+            const startYear = parseInt(document.getElementById('companywide-startYear').value);
+            const endMonth = parseInt(document.getElementById('companywide-endMonth').value);
+            const endYear = parseInt(document.getElementById('companywide-endYear').value);
+
+            const startIdx = (startYear - 2024) * 12 + startMonth - 9;
+            const endIdx = (endYear - 2024) * 12 + endMonth - 9;
+
+            if (startIdx < 0 || endIdx < 0 || startIdx > endIdx) {
+                console.error('Invalid date range');
+                return;
+            }
+
+            // Collect all stores with their data
+            const allStores = [];
+            const regionAverages = [];
+
+            for (const [regionName, graphData] of Object.entries(regionalGraphData)) {
+                if (!graphData.locations) continue;
+
+                const regionRatings = [];
+
+                graphData.locations.forEach(loc => {
+                    const avgRating = calculateAverageRating(loc.data, startIdx, endIdx);
+                    const startRating = parseFloat(loc.data[startIdx]) || null;
+                    const endRating = parseFloat(loc.data[endIdx]) || null;
+
+                    let change = 0;
+                    if (startRating !== null && endRating !== null) {
+                        change = endRating - startRating;
+                    }
+
+                    if (avgRating > 0) {
+                        allStores.push({
+                            name: `${loc.city} (${regionName})`,
+                            avgRating,
+                            change,
+                            startRating,
+                            endRating
+                        });
+
+                        regionRatings.push(avgRating);
+                    }
+                });
+
+                // Calculate region average
+                if (regionRatings.length > 0) {
+                    const regionAvg = regionRatings.reduce((sum, r) => sum + r, 0) / regionRatings.length;
+
+                    // Get regional average data for change calculation
+                    const regionStartRating = graphData.average.data[startIdx];
+                    const regionEndRating = graphData.average.data[endIdx];
+                    let regionChange = 0;
+                    if (regionStartRating !== null && regionEndRating !== null) {
+                        regionChange = regionEndRating - regionStartRating;
+                    }
+
+                    regionAverages.push({
+                        name: regionName,
+                        avgRating: regionAvg,
+                        change: regionChange
+                    });
+                }
+            }
+
+            // Sort and get rankings
+            const best5Stores = [...allStores].sort((a, b) => b.avgRating - a.avgRating).slice(0, 5);
+            const worst5Stores = [...allStores].sort((a, b) => a.avgRating - b.avgRating).slice(0, 5);
+            const improvedStores = [...allStores].filter(s => s.change > 0).sort((a, b) => b.change - a.change).slice(0, 5);
+            const declinedStores = [...allStores].filter(s => s.change < 0).sort((a, b) => a.change - b.change).slice(0, 5);
+
+            const bestRegions = [...regionAverages].sort((a, b) => b.avgRating - a.avgRating);
+            const worstRegions = [...regionAverages].sort((a, b) => a.avgRating - b.avgRating);
+            const improvedRegions = [...regionAverages].filter(r => r.change > 0).sort((a, b) => b.change - a.change);
+            const declinedRegions = [...regionAverages].filter(r => r.change < 0).sort((a, b) => a.change - b.change);
+
+            // Render store rankings
+            renderRankingList('companywide-best5-stores', best5Stores, 'avgRating');
+            renderRankingList('companywide-worst5-stores', worst5Stores, 'avgRating');
+            renderRankingList('companywide-improved-stores', improvedStores, 'change');
+            renderRankingList('companywide-declined-stores', declinedStores, 'change');
+
+            // Render region rankings
+            renderRankingList('companywide-best-regions', bestRegions, 'avgRating');
+            renderRankingList('companywide-worst-regions', worstRegions, 'avgRating');
+            renderRankingList('companywide-improved-regions', improvedRegions, 'change');
+            renderRankingList('companywide-declined-regions', declinedRegions, 'change');
+        }
+
+        // Initialize dashboard on page load
+        window.addEventListener('load', () => {
+            loadAllRegionsAndGraphs();
+        });
+
+        window.addEventListener('resize', syncRowHeights);
+
+        // Display current date
+        document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    </script>
+</body>
+</html>
