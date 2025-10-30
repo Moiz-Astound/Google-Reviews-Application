@@ -1,0 +1,8 @@
+{
+  "name": "yext-proxy-netlify",
+  "version": "1.0.0",
+  "description": "Netlify serverless function to proxy Yext API requests",
+  "dependencies": {
+    "node-fetch": "^2.6.1"
+  }
+}
