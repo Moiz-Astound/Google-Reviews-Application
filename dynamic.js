@@ -121,25 +121,23 @@ function generateMonthLabels() {
     return months;
 }
 
-// Fetch rating from Yext API for a specific entity and date
+// Fetch rating from Yext API for a specific entity and date (via Netlify proxy)
 async function fetchRating(entityId, maxDate) {
     if (!entityId || entityId === '') {
         console.log('No entity ID provided');
         return null;
     }
 
+    // Use Netlify serverless function proxy
+    const PROXY_URL = 'https://moizgoogle.netlify.app/.netlify/functions/yext-proxy';
+
     const params = new URLSearchParams({
-        api_key: YEXT_API_KEY,
-        v: YEXT_API_VERSION,
-        entityIds: entityId,
-        publisherIds: 'GOOGLEMYBUSINESS',
-        status: 'LIVE',
-        maxPublisherDate: maxDate,
-        limit: '1'
+        entityId: entityId,
+        maxDate: maxDate
     });
 
-    const url = `${YEXT_BASE_URL}/accounts/me/reviews?${params}`;
-    console.log(`Fetching: ${url}`);
+    const url = `${PROXY_URL}?${params}`;
+    console.log(`Fetching via proxy: ${url}`);
 
     try {
         const response = await fetch(url);
