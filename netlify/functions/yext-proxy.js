@@ -2,12 +2,16 @@
 const fetch = require('node-fetch');
 
 exports.handler = async (event, context) => {
-    // Enable CORS
+    // Enable CORS with Safari-compatible headers
     const headers = {
         'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Headers': 'Content-Type, Accept, Origin',
         'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-        'Content-Type': 'application/json'
+        'Access-Control-Max-Age': '86400',
+        'Access-Control-Allow-Credentials': 'false',
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Vary': 'Origin'
     };
 
     // Handle preflight request
