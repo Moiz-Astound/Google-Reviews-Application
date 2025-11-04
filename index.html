@@ -949,17 +949,6 @@
                         </table>
                     </div>
 
-                    <!-- Business Insights -->
-                    <div class="report-section">
-                        <h3>Business Insights & Recommendations</h3>
-                        <div class="ai-insights">
-                            <h4>🤖 Strategic Analysis</h4>
-                            <ul id="exec-ai-insights-list">
-                                <li>Loading insights...</li>
-                            </ul>
-                        </div>
-                    </div>
-
                     <!-- Export Buttons -->
                     <div style="display: flex; gap: 15px; justify-content: center; margin-top: 30px; flex-wrap: wrap;">
                         <button class="export-button export-button-pdf" onclick="exportExecutiveReportToPDF()">
@@ -1920,70 +1909,6 @@
                 `;
             }).join('');
             document.getElementById('exec-bottom-locations-table').innerHTML = bottomLocationsHTML;
-
-            // Generate AI insights
-            generateExecutiveAIInsights(marketRankings, topLocations, bottomLocations);
-        }
-
-        // Generate AI Insights for Executive Report
-        function generateExecutiveAIInsights(markets, topLocs, bottomLocs) {
-            const insights = [
-                {
-                    options: [
-                        `${markets[0].name} market leads with a ${markets[0].currentRating.toFixed(1)} rating. Consider documenting their best practices for other markets.`,
-                        `Top market ${markets[0].name} demonstrates excellence with ${markets[0].currentRating.toFixed(1)} rating. Their operational strategies should be analyzed for replication.`,
-                        `${markets[0].name}'s strong performance (${markets[0].currentRating.toFixed(1)}) indicates effective regional management. Leverage their success model across lower-performing markets.`
-                    ]
-                },
-                {
-                    options: [
-                        `${markets[markets.length - 1].name} requires immediate attention with ${markets[markets.length - 1].currentRating.toFixed(1)} rating. Recommend targeted customer service training and facility upgrades.`,
-                        `Focus improvement efforts on ${markets[markets.length - 1].name} market. Consider store manager coaching and enhanced customer feedback loops.`,
-                        `${markets[markets.length - 1].name} shows significant opportunity for growth. Implement a 90-day improvement plan with weekly monitoring.`
-                    ]
-                },
-                {
-                    options: [
-                        `Companywide improvement of ${(markets[0].currentRating - markets[0].oct2024Rating).toFixed(1)} points demonstrates strong momentum. Maintain current initiatives while scaling to underperforming locations.`,
-                        `The positive trajectory shows effective strategic execution. Focus on pushing high-performing locations above 4.0 to drive overall excellence.`,
-                        `With ${topLocs.length} locations performing exceptionally, establish a mentorship program to share winning strategies with struggling locations.`
-                    ]
-                },
-                {
-                    options: [
-                        `Top performers (${topLocs[0].city}, ${topLocs[1].city}) averaging ${((topLocs[0].rating + topLocs[1].rating) / 2).toFixed(1)}+ should mentor bottom 10 locations.`,
-                        `Locations with ratings above 4.3 show correlation with recent training initiatives. Prioritize similar programs in bottom-ranked stores.`,
-                        `Service quality and response times drive ratings. Implement real-time monitoring and service level agreements across all locations.`
-                    ]
-                },
-                {
-                    options: [
-                        `Current ${markets[0].currentRating.toFixed(1)} average positions us competitively. Target 4.0+ across all markets to establish clear market leadership.`,
-                        `${markets[0].name}'s performance provides competitive advantage. Leverage this success in regional marketing campaigns for customer acquisition.`,
-                        `Markets averaging above ${markets[2].currentRating.toFixed(1)} show strong retention. Implement win-back campaigns in lower markets using proven playbooks.`
-                    ]
-                },
-                {
-                    options: [
-                        `Allocate resources to bottom 10 locations for staff training, facility improvements, and customer engagement initiatives.`,
-                        `High-performing locations demonstrate clear ROI. Increase investment in proven customer experience programs.`,
-                        `Markets with highest improvement rates show effective resource utilization. Model budget allocation on their strategies.`
-                    ]
-                }
-            ];
-
-            // Randomly select 5-6 insights
-            const selected = [];
-            const numInsights = 5 + Math.floor(Math.random() * 2);
-            const shuffled = insights.sort(() => Math.random() - 0.5);
-
-            for (let i = 0; i < Math.min(numInsights, shuffled.length); i++) {
-                const randomOption = shuffled[i].options[Math.floor(Math.random() * shuffled[i].options.length)];
-                selected.push(randomOption);
-            }
-
-            const insightsHTML = selected.map(insight => `<li>${insight}</li>`).join('');
-            document.getElementById('exec-ai-insights-list').innerHTML = insightsHTML;
         }
 
         // Helper function to clean text for PDF export
@@ -2334,43 +2259,7 @@
                     }
                 });
 
-                // Page 4 - Business Insights
-                pdf.addPage();
-                pageNum++;
-                addPageHeader(pageNum);
-                yPos = 25;
-
-                pdf.setFontSize(18);
-                pdf.setFont(undefined, 'bold');
-                pdf.setTextColor(102, 126, 234);
-                pdf.text('Strategic Business Insights', margin, yPos);
-                yPos += 10;
-
-                pdf.setFillColor(227, 242, 253);
-                pdf.rect(margin, yPos, contentWidth, 10, 'F');
-                pdf.setTextColor(102, 126, 234);
-                pdf.setFontSize(12);
-                pdf.setFont(undefined, 'bold');
-                pdf.text('AI-Generated Recommendations', margin + 5, yPos + 7);
-                yPos += 15;
-
-                const insights = document.getElementById('exec-ai-insights-list').querySelectorAll('li');
-                pdf.setFontSize(10);
-                pdf.setFont(undefined, 'normal');
-                pdf.setTextColor(0, 0, 0);
-
-                insights.forEach((insight, idx) => {
-                    checkNewPage(15);
-                    const text = cleanTextForPDF(insight.textContent);
-                    const lines = pdf.splitTextToSize(text, contentWidth - 10);
-
-                    pdf.text('*', margin + 5, yPos);
-                    lines.forEach((line, lineIdx) => {
-                        pdf.text(line, margin + 10, yPos + (lineIdx * 5));
-                    });
-                    yPos += (lines.length * 5) + 5;
-                });
-
+                // No Strategic Insights page - removed as requested
                 addPageFooter(pageNum);
 
                 // Save PDF
@@ -2476,79 +2365,79 @@
                 pdf.setFontSize(10);
                 pdf.setFont(undefined, 'bold');
                 pdf.setTextColor(118, 75, 162);
-                pdf.text('Top Markets', margin, leftY);
+                pdf.text('Market Ranking (by Current Rating)', margin, leftY);
                 leftY += 5;
 
                 // Market table header
                 pdf.setFillColor(102, 126, 234);
                 pdf.rect(margin, leftY, colWidth, 6, 'F');
                 pdf.setTextColor(255, 255, 255);
-                pdf.setFontSize(7);
-                pdf.text('Market', margin + 2, leftY + 4);
+                pdf.setFontSize(6);
+                pdf.text('Rank', margin + 2, leftY + 4);
+                pdf.text('Market', margin + 12, leftY + 4);
                 pdf.text('Rating', margin + colWidth - 15, leftY + 4);
                 leftY += 6;
 
-                // Get top 5 markets
+                // Get ALL markets
                 const marketRows = document.getElementById('exec-market-ranking-table').querySelectorAll('tr');
                 pdf.setFont(undefined, 'normal');
                 pdf.setTextColor(0, 0, 0);
-                let marketCount = 0;
                 marketRows.forEach((row, idx) => {
-                    if (marketCount < 5) {
-                        const cells = row.querySelectorAll('td');
-                        if (cells.length > 0) {
-                            pdf.setFontSize(7);
-                            if (idx % 2 === 0) {
-                                pdf.setFillColor(248, 249, 250);
-                                pdf.rect(margin, leftY, colWidth, 5, 'F');
-                            }
-                            const cleanMarketName = cleanTextForPDF(cells[1].textContent);
-                            const marketName = cleanMarketName.length > 18 ? cleanMarketName.substring(0, 18) + '...' : cleanMarketName;
-                            pdf.text(`${cleanTextForPDF(cells[0].textContent)}. ${marketName}`, margin + 2, leftY + 3.5);
-                            pdf.text(cleanTextForPDF(cells[2].textContent), margin + colWidth - 15, leftY + 3.5);
-                            leftY += 5;
-                            marketCount++;
+                    const cells = row.querySelectorAll('td');
+                    if (cells.length > 0) {
+                        pdf.setFontSize(6);
+                        if (idx % 2 === 0) {
+                            pdf.setFillColor(248, 249, 250);
+                            pdf.rect(margin, leftY, colWidth, 4.5, 'F');
                         }
+                        const cleanMarketName = cleanTextForPDF(cells[1].textContent);
+                        const marketName = cleanMarketName.length > 20 ? cleanMarketName.substring(0, 20) + '...' : cleanMarketName;
+                        pdf.text(cleanTextForPDF(cells[0].textContent), margin + 2, leftY + 3);
+                        pdf.text(marketName, margin + 12, leftY + 3);
+                        pdf.text(cleanTextForPDF(cells[2].textContent), margin + colWidth - 15, leftY + 3);
+                        leftY += 4.5;
                     }
                 });
 
                 leftY += 3;
 
-                // Market Improvement
+                // Market Improvement Ranking
                 pdf.setFontSize(10);
                 pdf.setFont(undefined, 'bold');
                 pdf.setTextColor(118, 75, 162);
-                pdf.text('Market Improvement', margin, leftY);
+                pdf.text('Market Improvement Ranking', margin, leftY);
                 leftY += 5;
 
                 pdf.setFillColor(102, 126, 234);
                 pdf.rect(margin, leftY, colWidth, 6, 'F');
                 pdf.setTextColor(255, 255, 255);
-                pdf.setFontSize(7);
-                pdf.text('Market', margin + 2, leftY + 4);
-                pdf.text('Change', margin + colWidth - 15, leftY + 4);
+                pdf.setFontSize(6);
+                pdf.text('Rank', margin + 2, leftY + 4);
+                pdf.text('Market', margin + 12, leftY + 4);
+                pdf.text('Oct 24', margin + colWidth - 30, leftY + 4);
+                pdf.text('Current', margin + colWidth - 20, leftY + 4);
+                pdf.text('Change', margin + colWidth - 10, leftY + 4);
                 leftY += 6;
 
                 const improvementRows = document.getElementById('exec-market-improvement-table').querySelectorAll('tr');
                 pdf.setFont(undefined, 'normal');
                 pdf.setTextColor(0, 0, 0);
-                let improvCount = 0;
                 improvementRows.forEach((row, idx) => {
-                    if (improvCount < 5) {
-                        const cells = row.querySelectorAll('td');
-                        if (cells.length > 0) {
-                            pdf.setFontSize(7);
-                            if (idx % 2 === 0) {
-                                pdf.setFillColor(248, 249, 250);
-                                pdf.rect(margin, leftY, colWidth, 5, 'F');
-                            }
-                            const cleanMarketName = cleanTextForPDF(cells[1].textContent);
-                            const marketName = cleanMarketName.length > 18 ? cleanMarketName.substring(0, 18) + '...' : cleanMarketName;
-                            pdf.text(`${cleanTextForPDF(cells[0].textContent)}. ${marketName}`, margin + 2, leftY + 3.5);
-                            pdf.text(cleanTextForPDF(cells[4].textContent), margin + colWidth - 15, leftY + 3.5);
-                            improvCount++;
-                            leftY += 5;
+                    const cells = row.querySelectorAll('td');
+                    if (cells.length > 0) {
+                        pdf.setFontSize(6);
+                        if (idx % 2 === 0) {
+                            pdf.setFillColor(248, 249, 250);
+                            pdf.rect(margin, leftY, colWidth, 4.5, 'F');
                         }
+                        const cleanMarketName = cleanTextForPDF(cells[1].textContent);
+                        const marketName = cleanMarketName.length > 15 ? cleanMarketName.substring(0, 15) + '...' : cleanMarketName;
+                        pdf.text(cleanTextForPDF(cells[0].textContent), margin + 2, leftY + 3);
+                        pdf.text(marketName, margin + 12, leftY + 3);
+                        pdf.text(cleanTextForPDF(cells[2].textContent), margin + colWidth - 30, leftY + 3);
+                        pdf.text(cleanTextForPDF(cells[3].textContent), margin + colWidth - 20, leftY + 3);
+                        pdf.text(cleanTextForPDF(cells[4].textContent), margin + colWidth - 10, leftY + 3);
+                        leftY += 4.5;
                     }
                 });
 
@@ -2557,14 +2446,15 @@
                 pdf.setFontSize(10);
                 pdf.setFont(undefined, 'bold');
                 pdf.setTextColor(118, 75, 162);
-                pdf.text('Top 5 Locations', margin + colWidth + 4, rightY);
+                pdf.text('Top 10 Performing Locations', margin + colWidth + 4, rightY);
                 rightY += 5;
 
                 pdf.setFillColor(102, 126, 234);
                 pdf.rect(margin + colWidth + 4, rightY, colWidth, 6, 'F');
                 pdf.setTextColor(255, 255, 255);
-                pdf.setFontSize(7);
-                pdf.text('Location', margin + colWidth + 6, rightY + 4);
+                pdf.setFontSize(6);
+                pdf.text('Rank', margin + colWidth + 6, rightY + 4);
+                pdf.text('Location', margin + colWidth + 16, rightY + 4);
                 pdf.text('Rating', margin + contentWidth - 10, rightY + 4);
                 rightY += 6;
 
@@ -2573,19 +2463,20 @@
                 pdf.setTextColor(0, 0, 0);
                 let topLocCount = 0;
                 topLocRows.forEach((row, idx) => {
-                    if (topLocCount < 5) {
+                    if (topLocCount < 10) {
                         const cells = row.querySelectorAll('td');
                         if (cells.length > 0) {
-                            pdf.setFontSize(7);
+                            pdf.setFontSize(6);
                             if (idx % 2 === 0) {
                                 pdf.setFillColor(248, 249, 250);
-                                pdf.rect(margin + colWidth + 4, rightY, colWidth, 5, 'F');
+                                pdf.rect(margin + colWidth + 4, rightY, colWidth, 4.5, 'F');
                             }
                             const cleanLocName = cleanTextForPDF(cells[2].textContent);
-                            const locName = cleanLocName.length > 20 ? cleanLocName.substring(0, 20) + '...' : cleanLocName;
-                            pdf.text(`${cleanTextForPDF(cells[0].textContent)}. ${locName}`, margin + colWidth + 6, rightY + 3.5);
-                            pdf.text(cleanTextForPDF(cells[4].textContent), margin + contentWidth - 10, rightY + 3.5);
-                            rightY += 5;
+                            const locName = cleanLocName.length > 18 ? cleanLocName.substring(0, 18) + '...' : cleanLocName;
+                            pdf.text(cleanTextForPDF(cells[0].textContent), margin + colWidth + 6, rightY + 3);
+                            pdf.text(locName, margin + colWidth + 16, rightY + 3);
+                            pdf.text(cleanTextForPDF(cells[4].textContent), margin + contentWidth - 10, rightY + 3);
+                            rightY += 4.5;
                             topLocCount++;
                         }
                     }
@@ -2593,18 +2484,19 @@
 
                 rightY += 3;
 
-                // Bottom 5 Locations
+                // Bottom 10 Locations
                 pdf.setFontSize(10);
                 pdf.setFont(undefined, 'bold');
                 pdf.setTextColor(118, 75, 162);
-                pdf.text('Bottom 5 (Need Improvement)', margin + colWidth + 4, rightY);
+                pdf.text('Bottom 10 (Need Improvement)', margin + colWidth + 4, rightY);
                 rightY += 5;
 
                 pdf.setFillColor(102, 126, 234);
                 pdf.rect(margin + colWidth + 4, rightY, colWidth, 6, 'F');
                 pdf.setTextColor(255, 255, 255);
-                pdf.setFontSize(7);
-                pdf.text('Location', margin + colWidth + 6, rightY + 4);
+                pdf.setFontSize(6);
+                pdf.text('Rank', margin + colWidth + 6, rightY + 4);
+                pdf.text('Location', margin + colWidth + 16, rightY + 4);
                 pdf.text('Rating', margin + contentWidth - 10, rightY + 4);
                 rightY += 6;
 
@@ -2613,57 +2505,27 @@
                 pdf.setTextColor(0, 0, 0);
                 let bottomLocCount = 0;
                 bottomLocRows.forEach((row, idx) => {
-                    if (bottomLocCount < 5) {
+                    if (bottomLocCount < 10) {
                         const cells = row.querySelectorAll('td');
                         if (cells.length > 0) {
-                            pdf.setFontSize(7);
+                            pdf.setFontSize(6);
                             if (idx % 2 === 0) {
                                 pdf.setFillColor(248, 249, 250);
-                                pdf.rect(margin + colWidth + 4, rightY, colWidth, 5, 'F');
+                                pdf.rect(margin + colWidth + 4, rightY, colWidth, 4.5, 'F');
                             }
                             const cleanLocName = cleanTextForPDF(cells[2].textContent);
-                            const locName = cleanLocName.length > 20 ? cleanLocName.substring(0, 20) + '...' : cleanLocName;
-                            pdf.text(`${cleanTextForPDF(cells[0].textContent)}. ${locName}`, margin + colWidth + 6, rightY + 3.5);
-                            pdf.text(cleanTextForPDF(cells[4].textContent), margin + contentWidth - 10, rightY + 3.5);
-                            rightY += 5;
+                            const locName = cleanLocName.length > 18 ? cleanLocName.substring(0, 18) + '...' : cleanLocName;
+                            pdf.text(cleanTextForPDF(cells[0].textContent), margin + colWidth + 6, rightY + 3);
+                            pdf.text(locName, margin + colWidth + 16, rightY + 3);
+                            pdf.text(cleanTextForPDF(cells[4].textContent), margin + contentWidth - 10, rightY + 3);
+                            rightY += 4.5;
                             bottomLocCount++;
                         }
                     }
                 });
 
-                // Strategic Insights Section (Bottom of page)
+                // No Strategic Insights Section - removed as requested
                 yPos = Math.max(leftY, rightY) + 5;
-
-                pdf.setFillColor(227, 242, 253);
-                pdf.roundedRect(margin, yPos, contentWidth, 8, 2, 2, 'F');
-                pdf.setTextColor(102, 126, 234);
-                pdf.setFontSize(10);
-                pdf.setFont(undefined, 'bold');
-                pdf.text('Key Strategic Insights', margin + 3, yPos + 5.5);
-                yPos += 10;
-
-                const insights = document.getElementById('exec-ai-insights-list').querySelectorAll('li');
-                pdf.setFontSize(7);
-                pdf.setFont(undefined, 'normal');
-                pdf.setTextColor(0, 0, 0);
-
-                let insightCount = 0;
-                insights.forEach((insight) => {
-                    if (insightCount < 4 && yPos < pageHeight - 20) { // Limit to 4 insights to fit on page
-                        const text = cleanTextForPDF(insight.textContent);
-                        const lines = pdf.splitTextToSize(text, contentWidth - 8);
-
-                        // Only add if it fits
-                        if (yPos + (lines.length * 3.5) < pageHeight - 15) {
-                            pdf.text('*', margin + 2, yPos);
-                            lines.forEach((line, lineIdx) => {
-                                pdf.text(line, margin + 6, yPos + (lineIdx * 3.5));
-                            });
-                            yPos += (lines.length * 3.5) + 2;
-                            insightCount++;
-                        }
-                    }
-                });
 
                 // Footer
                 pdf.setFontSize(7);
@@ -2699,6 +2561,15 @@
 
                 const reportElement = document.getElementById('executive-report');
 
+                // Hide AI insights section during export
+                const insightsSection = reportElement.querySelector('.ai-insights');
+                const insightsSectionParent = insightsSection ? insightsSection.closest('.report-section') : null;
+                const originalDisplay = insightsSectionParent ? insightsSectionParent.style.display : null;
+
+                if (insightsSectionParent) {
+                    insightsSectionParent.style.display = 'none';
+                }
+
                 // Capture with high quality
                 const canvas = await html2canvas(reportElement, {
                     scale: 3, // Higher scale for better quality
@@ -2713,6 +2584,11 @@
 
                 // Convert to blob
                 canvas.toBlob(async (blob) => {
+                    // Restore AI insights section visibility
+                    if (insightsSectionParent) {
+                        insightsSectionParent.style.display = originalDisplay || '';
+                    }
+
                     try {
                         // Try to copy to clipboard (modern browsers)
                         if (navigator.clipboard && window.ClipboardItem) {
@@ -2765,6 +2641,15 @@
 
             } catch (error) {
                 console.error('Error generating image:', error);
+
+                // Restore AI insights section visibility in case of error
+                const reportElement = document.getElementById('executive-report');
+                const insightsSection = reportElement.querySelector('.ai-insights');
+                const insightsSectionParent = insightsSection ? insightsSection.closest('.report-section') : null;
+                if (insightsSectionParent) {
+                    insightsSectionParent.style.display = '';
+                }
+
                 alert('❌ Error generating image. Please try again.');
                 const button = document.querySelector('.export-button-image');
                 button.innerHTML = '🖼️ Export as Image';
